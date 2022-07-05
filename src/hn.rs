@@ -1,4 +1,7 @@
 use scraper::{Html, Selector};
+use url::Url;
+
+const HN_BASE_URL: &str = "https://news.ycombinator.com/";
 
 pub struct Item {
     pub id: String,
@@ -6,7 +9,7 @@ pub struct Item {
 }
 
 pub async fn get_items() -> Result<Vec<Item>, ()> {
-    let resp = reqwest::get("https://news.ycombinator.com/").await.unwrap();
+    let resp = reqwest::get(HN_BASE_URL).await.unwrap();
     let html = resp.text().await.unwrap();
     let doc = Html::parse_document(&html);
     let item_selector = Selector::parse(".athing").unwrap();
@@ -14,10 +17,18 @@ pub async fn get_items() -> Result<Vec<Item>, ()> {
     let items = doc
         .select(&item_selector)
         .map(|item| {
-            let link = item.select(&item_link_selector).next().unwrap();
+            let item_id = item.value().attr("id").unwrap().to_string();
+
+            let link_element = item.select(&item_link_selector).next().unwrap();
+            let item_href = link_element.value().attr("href").unwrap().to_string();
+            let item_url = match Url::parse(&item_href) {
+                Ok(_) => item_href,
+                Err(_) => format!("{}{}", HN_BASE_URL, &item_href),
+            };
+
             Item {
-                id: item.value().attr("id").unwrap().to_string(),
-                url: link.value().attr("href").unwrap().to_string(),
+                id: item_id,
+                url: item_url,
             }
         })
         .collect::<Vec<Item>>();
@@ -25,5 +36,5 @@ pub async fn get_items() -> Result<Vec<Item>, ()> {
 }
 
 pub fn get_item_hn_link(item: &Item) -> String {
-    format!("https://news.ycombinator.com/item?id={}", &item.id)
+    format!("{}item?id={}", HN_BASE_URL, &item.id)
 }
