@@ -55,14 +55,11 @@ fn format_item_to_message(item: &hn::Item) -> String {
 async fn send_message(sender: &Sender, message: &String) -> Result<Message, ()> {
     let recipient = Recipient::ChannelUsername(sender.channel.to_string());
     info!("Sending message '{message}'");
-    sender
-        .bot
-        .send_message(recipient, message)
-        .parse_mode(ParseMode::Html)
-        .send()
-        .await
-        .map_err(|e| {
-            error!("Failed to send message: {e}");
-            ()
-        })
+    let mut request = sender.bot.send_message(recipient, message);
+    request.parse_mode = Some(ParseMode::Html);
+    // request.disable_web_page_preview = Some(true);
+    request.send().await.map_err(|e| {
+        error!("Failed to send message: {e}");
+        () // Ignores error type
+    })
 }
