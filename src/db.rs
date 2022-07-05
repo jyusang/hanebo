@@ -14,7 +14,14 @@ pub fn table_exists(conn: &Connection) -> bool {
 
 pub fn create_table(conn: &Connection) {
     conn.execute(
-        "CREATE TABLE posts (id TEXT PRIMARY KEY NOT NULL, url TEXT NOT NULL, last_sent INT);",
+        "
+CREATE TABLE posts (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    last_sent INT
+);
+",
         [],
     )
     .unwrap();
@@ -24,8 +31,8 @@ pub fn insert_items(conn: &mut Connection, items: &Vec<hn::Item>) {
     let tx = conn.transaction().unwrap();
     for item in items.iter() {
         tx.execute(
-            "INSERT OR IGNORE INTO posts (id, url) VALUES (?, ?);",
-            [&item.id, &item.url],
+            "INSERT OR IGNORE INTO posts (id, title, url) VALUES (?, ?, ?);",
+            [&item.id, &item.title, &item.url],
         )
         .unwrap();
     }

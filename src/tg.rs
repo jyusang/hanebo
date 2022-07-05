@@ -31,8 +31,7 @@ pub async fn send_items(sender: &Sender, conn: &Connection, items: &[hn::Item]) 
             None => true,
         };
         if should_send {
-            let hn_link = hn::get_item_hn_link(&item);
-            let message = format!("{} <a href=\"{}\">comments</a>", &item.url, hn_link);
+            let message = format_item_to_message(&item);
             match send_message(sender, &message).await {
                 Ok(_) => {}
                 Err(_) => {
@@ -43,6 +42,14 @@ pub async fn send_items(sender: &Sender, conn: &Connection, items: &[hn::Item]) 
             db::update_last_sent(&conn, &item, now)
         }
     }
+}
+
+fn format_item_to_message(item: &hn::Item) -> String {
+    let comments_link = hn::get_item_comments_link(&item);
+    format!(
+        "<a href=\"{}\"><em>{}</em></a>\n<a href=\"{}\">comments</a>",
+        &item.url, &item.title, comments_link
+    )
 }
 
 async fn send_message(sender: &Sender, message: &String) -> Result<Message, ()> {
