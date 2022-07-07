@@ -30,6 +30,7 @@ async fn main() {
         let items = hn::get_items().await.unwrap();
         db::insert_items(&mut conn, &items);
         tg::send_items(&sender, &conn, &items).await;
+        info!("Time to sleep");
         utils::sleep(interval).await;
     }
 }

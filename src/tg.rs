@@ -35,7 +35,7 @@ pub async fn send_items(sender: &Sender, conn: &Connection, items: &[hn::Item]) 
             match send_message(sender, &message).await {
                 Ok(_) => {}
                 Err(_) => {
-                    info!("Possibly encountered rate limit, sleep first");
+                    info!("Possibly encountered rate limit, skipping");
                     break;
                 }
             };
