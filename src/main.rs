@@ -27,7 +27,14 @@ async fn main() {
 
     loop {
         info!("Time to fetch");
-        let items = hn::get_items().await.unwrap();
+        let items = match hn::get_items().await {
+            Ok(val) => val,
+            Err(_) => {
+                warn!("Failed to get items from HN");
+                info!("Time to sleep");
+                continue;
+            },
+        };
         db::insert_items(&mut conn, &items);
         tg::send_items(&sender, &conn, &items).await;
         info!("Time to sleep");
