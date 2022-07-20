@@ -27,17 +27,24 @@ async fn main() {
 
     loop {
         info!("Time to fetch");
-        let items = match hn::get_items().await {
-            Ok(val) => val,
-            Err(_) => {
-                warn!("Failed to get items from HN");
-                info!("Time to sleep");
-                continue;
-            },
+        match run(&mut conn, &sender).await {
+            Ok(_) => info!("Work done"),
+            Err(_) => warn!("Oops, something went wrong"),
         };
-        db::insert_items(&mut conn, &items);
-        tg::send_items(&sender, &conn, &items).await;
         info!("Time to sleep");
         utils::sleep(interval).await;
     }
+}
+
+async fn run(conn: &mut rusqlite::Connection, sender: &tg::Sender) -> Result<(), ()> {
+    let items = hn::get_items().await.map_err(|e| {
+        match e {
+            hn::ScrapingError::RequestError => warn!("No response from HN"),
+            hn::ScrapingError::InvalidResponseError => warn!("Invalid response from HN"),
+        };
+        ()
+    })?;
+    db::insert_items(conn, &items);
+    tg::send_items(&sender, &conn, &items).await;
+    Ok(())
 }
