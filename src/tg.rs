@@ -45,7 +45,7 @@ pub async fn send_items(sender: &Sender, conn: &Connection, items: &[hn::Item]) 
 }
 
 fn format_item_to_message(item: &hn::Item) -> String {
-    let comments_link = hn::get_item_comments_link(&item);
+    let comments_link = hn::derive_item_comments_link(&item);
     format!(
         "<a href=\"{}\"><em>{}</em></a>\n<a href=\"{}\">comments</a>",
         &item.url, &item.title, comments_link

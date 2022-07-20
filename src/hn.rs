@@ -32,7 +32,7 @@ pub async fn get_items() -> Result<Vec<Item>, ScrapingError> {
     Result::Ok(items)
 }
 
-pub fn get_item_comments_link(item: &Item) -> String {
+pub fn derive_item_comments_link(item: &Item) -> String {
     format!("{}item?id={}", HN_BASE_URL, &item.id)
 }
 
